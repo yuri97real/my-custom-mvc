@@ -6,12 +6,11 @@ abstract class Controller {
 
     public function model($model)
     {
-        $obj_name = ucfirst($model) . "Model";
-        $namespace = "\\App\\Models\\{$obj_name}";
+        $classname = ucfirst($model) . "Model";
 
-        require_once ROOT . "/app/Models/{$obj_name}.php";
+        require_once ROOT . "/app/Models/{$classname}.php";
 
-        return new $namespace;
+        return new $classname;
     }
 
     public function view($view, $data = [])
@@ -26,7 +25,7 @@ abstract class Controller {
 
     public function redirect($route = "/home")
     {
-        header("Location: {$route}"); die();
+        header("Location: {$route}"); die;
     }
 
 }

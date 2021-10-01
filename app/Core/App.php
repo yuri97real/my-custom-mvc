@@ -4,7 +4,7 @@ namespace App\Core;
 
 class App {
 
-    private $route;
+    private $route, $mainPage = "home";
 
     public function __construct()
     {
@@ -30,14 +30,14 @@ class App {
 
     public function getController()
     {
-        $class = $this->route[0] ?? "home"; //tentar receber um controlador pela url, senão, padrão "home"
+        $class = $this->route[0] ?? $this->mainPage; //tentar receber um controlador pela url, senão, padrão definido na $mainPage
         $class = ucfirst($class) . "Controller";
 
         $path = ROOT . "/app/Controllers";
 
         if(!file_exists("{$path}/{$class}.php")) $class = "ErrorController"; //se o controlador for setado na url, mas não existir, renomear classe para "ErrorController"
 
-        require_once "{$path}/{$class}.php"; //3 possíveis respostas... 1. Padrão "home", 2. "error" ou 3. Enviado pela url
+        require_once "{$path}/{$class}.php"; //3 possíveis respostas... 1. Padrão $mainPage, 2. "error" ou 3. O que está na url
 
         return new $class;
     }

@@ -6,7 +6,7 @@ Este é um microframework MVC desenvolvido em PHP.
     * PHP >= 7.2
 
 ## Configurações
-    * Crie arquivo "config.php" ou renomeie o arquivo "config.example.php" no diretório root.
+    * Crie um arquivo "config.php" ou renomeie o arquivo "config.example.php" no diretório root.
     * Use o comando "composer update" ou "composer install" para baixar a pasta "vendor" com o "autoload"
     * Inicie o servidor na pasta "public"
 
