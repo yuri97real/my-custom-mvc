@@ -1,0 +1,11 @@
+RewriteEngine On
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+Options -Indexes
+
+ErrorDocument 403 /error
+ErrorDocument 404 /error
+
+RewriteRule ^(.*)$ index.php
