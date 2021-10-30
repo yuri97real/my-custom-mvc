@@ -28,4 +28,22 @@ abstract class Controller {
         header("Location: {$route}"); die;
     }
 
+    public function console($data)
+    {
+        echo "<pre>"; print_r($data); die;
+    }
+
+    public function response(int $code = 200, array $data = [])
+    {
+        require_once ROOT."/status.php";
+
+        $response = $status[$code] ?? $status[409];
+
+        http_response_code($response["status"]);
+
+        if(!empty($data)) $response["body"] = $data;
+
+        $this->json($response);
+    }
+
 }

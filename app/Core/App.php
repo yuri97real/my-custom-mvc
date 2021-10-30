@@ -10,7 +10,7 @@ class App {
     {
         $this->route = $this->parseURL();
 
-        $controller = $this->getController();
+        $controller = $this->getController(isset($_GET["json"]));
         $method = $this->getMethod($controller);
         $params = $this->getParams();
 
@@ -20,6 +20,7 @@ class App {
     public function parseURL()
     {
         $url = $_SERVER["REQUEST_URI"];
+        $url = str_replace("?json", "", $url);
 
         $url = explode("/", $url);
         $url = array_filter($url);
@@ -28,14 +29,17 @@ class App {
         return array_values($url);
     }
 
-    public function getController()
+    public function getController(bool $json)
     {
+        $append = $json ? "API" : "Controller";
+        $folder = $json ? "Api" : "Controllers";
+
         $class = $this->route[0] ?? $this->mainPage; //tentar receber um controlador pela url, senão, padrão definido na $mainPage
-        $class = ucfirst($class) . "Controller";
+        $class = ucfirst($class) . $append;
 
-        $path = ROOT . "/app/Controllers";
+        $path = ROOT . "/app/{$folder}";
 
-        if(!file_exists("{$path}/{$class}.php")) $class = "ErrorController"; //se o controlador for setado na url, mas não existir, renomear classe para "ErrorController"
+        if(!file_exists("{$path}/{$class}.php")) $class = "Error{$append}"; //se o controlador for setado na url, mas não existir, renomear classe para "ErrorController"
 
         require_once "{$path}/{$class}.php"; //3 possíveis respostas... 1. Padrão $mainPage, 2. "error" ou 3. O que está na url
 
@@ -44,10 +48,10 @@ class App {
 
     public function getMethod($class)
     {
-        $method = $this->route[1] ?? "index"; //tentar receber um método pela url, senão, padrão "index"
+        $method = $this->route[1] ?? "default"; //tentar receber um método pela url, senão, padrão "default"
         $isInvalidMethod = !method_exists($class, $method) || !is_callable([$class, $method]);
 
-        if($isInvalidMethod) { //caso o método seja setado, mas não existir, padrão "index"
+        if($isInvalidMethod) { //caso o método seja setado, mas não existir, padrão "default"
             header("Location: /error"); die();
         }
 

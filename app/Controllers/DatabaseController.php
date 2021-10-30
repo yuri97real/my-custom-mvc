@@ -4,7 +4,7 @@ use App\Core\Controller;
 
 class DatabaseController extends Controller {
 
-    public function index()
+    public function default()
     {
         $model = $this->model("show");
         
