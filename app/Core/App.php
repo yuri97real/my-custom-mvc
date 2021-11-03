@@ -19,8 +19,10 @@ class App {
 
     public function parseURL()
     {
-        $url = $_SERVER["REQUEST_URI"];
-        $url = str_replace("?json", "", $url);
+        $query = $_SERVER["QUERY_STRING"] ?? "";
+        $query = $query != "" ? "?{$query}" : "";
+        
+        $url = str_replace($query, "", $_SERVER["REQUEST_URI"]);
 
         $url = explode("/", $url);
         $url = array_filter($url);
