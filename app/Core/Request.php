@@ -12,6 +12,12 @@ abstract class Request {
         "PATCH"=> []
     ];
 
+    public function __construct()
+    {
+        require_once ROOT . "/cors.php";
+        $this->setRequestData();
+    }
+
     private function setRequestData()
     {
         $request_method = $_SERVER["REQUEST_METHOD"];
@@ -28,13 +34,12 @@ abstract class Request {
         $decoded = $this->decodeBody($content);
 
         $this->data[$request_method] = $decoded;
-
         $_POST = [];
     }
 
-    private function decodeBody($content)
+    private function decodeBody($content): array
     {
-        if($content == "" && !empty($_POST)) return $_POST;
+        if($content == "" || !empty($_POST)) return $_POST;
 
         $first = substr($content, 0, 1);
         $last = substr($content, -1, 1);
@@ -65,12 +70,7 @@ abstract class Request {
 
     public function body($method)
     {
-        require_once ROOT . "/cors.php";
-        
-        $this->setRequestData();
-
         $method = mb_strtoupper($method);
-
         return $this->data[$method] ?? $this->response(405);
     }
 
@@ -82,6 +82,7 @@ abstract class Request {
 
     public function json(array $data = [])
     {
+        header("Content-Type: application/json; charset=utf-8");
         echo json_encode($data); die;
     }
 
