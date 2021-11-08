@@ -38,7 +38,7 @@ class Router {
 
         $handler = $data["handler"];
         $params = $data["params"] ?? [];
-        $directory = $data["directory"] ?? "Controllers";
+        $directory = $data["directory"];
 
         $schema = explode("::", $handler);
 
@@ -73,6 +73,7 @@ class Router {
 
             return [
                 "handler"=> $data["handler"],
+                "directory"=> $data["directory"],
                 "params"=> array_fill_keys($vars, current($diff))
             ];
 
@@ -80,6 +81,7 @@ class Router {
 
         return [
             "handler"=> "ErrorController::index",
+            "directory"=> "Controllers",
             "params"=> ["code"=> 404]
         ];
     }
@@ -90,6 +92,7 @@ class Router {
 
         $this->requests[$verb][$route] = [
             "handler"=> $handler,
+            "directory"=> "Controllers",
             "variables"=> $variables[1]
         ];
 
