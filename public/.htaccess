@@ -5,7 +5,7 @@ RewriteCond %{REQUEST_FILENAME} !-d
 
 Options -Indexes
 
-ErrorDocument 403 /error
-ErrorDocument 404 /error
+ErrorDocument 403 /error/403
+ErrorDocument 404 /error/404
 
 RewriteRule ^(.*)$ index.php

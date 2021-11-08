@@ -15,63 +15,111 @@ Este é um microframework MVC desenvolvido em PHP.
     Você pode ver um exemplo neste vídeo https://youtu.be/GsxhN4HBnC8?t=1893
 
 ## Uso
-    Rotas (app/Controllers)
-        A primeira palavra após o hostname, será considerada a classe controller.
-        A segunda palavra após o hostname, será considerada o método do controller. Se não houver esta informação, o padrão será "default".
-        O restante da rota será considerada como um array de parâmetros.
+    Rotas
+        Você pode definir as rotas no arquivo "public/index.php".
+        Lá estará o objeto $router, que contém os 4 verbos principais.
+
+        Para usar, basta usar: $router->{verbo}("/rota/exemplo", "classe::metodo")
 
         Exemplos:
-            "localhost/home" == (new HomeController)->default();
-            "localhost/buscar/usuarios" == (new BuscarController)->usuarios();
-            "localhost/excluir/produtos/6/7" == (new ExcluirController)->produtos([6, 7]);
+            Para rotas GET:
+                $router->get("/rota/exemplo", "classe::metodo");
+            Para rotas GET com parâmetros:
+                $router->get("/rota/exemplo/{id}", "classe::metodo");
+
+        Salve as classes neste formato "{nome da classe}Controller".
+        Desta forma, não é necessário informar o namespace.
+
+        Tentará acessar a classe na pasta "app/Controllers".
+
+        Para acessar uma classe numa pasta diferente, use:
+
+            $router->get("/rota/exemplo", "classe::metodo")->dir("outra/pasta");
+
+        Tentará acessar a classe na pasta "app/outra/pasta".
+
+    Dados
+        Numa requisição, podemos receber 3 tipos de dados:
+            
+            1. Params: são dados recebidos na url e são obrigatórios.
+                Exemplos: 
+                    "/produto/25"
+                    No exemplo acima, o "id" é obrigatório para buscar os dados do produto 25.
+            2. Query: são dados recebidos na url e são opcionais.
+                Exemplos:
+                    "/produtos/?pagina=2&filtro=blusa"
+                    Podemos considerar que o exemplo acima é uma listagem de produtos.
+                    A listagem é independente da paginação ou do filtro.
+            3. Body: são dados recebidos no corpo da requisição, geralmente por formulários ou no formato JSON.
+                Exemplos:
+                    "/criar/usuario"
+                    Podemos considerar que estamos acessando a rota acima com o método POST.
+                    Os dados do usuário a ser criado, estarão no corpo da requisição.
+
+        Para acessar qualquer dado acima:
+
+            Exemplo:
+
+                use App\Core\iRequest;
+                use App\Core\iResponse;
+
+                class ClasseExemplo {
+
+                    public function index(iRequest $request, iResponse $response) {
+
+                        $params = $request->params();
+                        $query = $request->query();
+                        $body = $request->body();
+
+                        echo $params->id;
+                        echo $query->pagina;
+                        echo $body->idade;
     
-    Títulos e Favicons
+    HTML, Títulos e Favicons
         Todo controller, estende o método "view" da classe controller principal.
         Este método permite importar um arquivo da pasta "app/Views" e enviar parâmetros para esta página.
 
+        Para importar o arquivo "app/Views/home/index.php", por exemplo, usamos:
+
+            $response->view("home/index");
+
+        Como segundo parâmetro deste método, podemos enviar um array com diversos argumentos.
+        Nesses argumentos, podemos enviar o título da página e o favicon que ela terá.
+
+        Exemplo:
+            use App\Core\iRequest;
+            use App\Core\iResponse;
+
+            class User {
+
+                public function index(iRequest $request, iResponse $response) {
+
+                    $response->view("buscar/usuarios", [
+                        "title"=>"Página de Busca", "favicon"=>"buscar.ico"
+                    ]);
+
+    API
+        Salve as classes no formato "{nome da classe}API" na pasta "app/Api".
+        Informe o diretório no $router.
+
         Exemplos:
-            Para importar o arquivo "app/Views/home/default.php" usamos,
+            $router->get("/items", "ItemAPI::index")->dir("Api");
 
-                $this->view("home/default");
-
-            Como segundo parâmetro deste método, podemos enviar um array com diversos argumentos.
-            Nesses argumentos, podemos enviar o título da página e o favicon que ela terá.
-
-                $this->view("buscar/usuarios", [
-                    "title"=>"Página de Busca", "favicon"=>"buscar.ico"
-                ]);
-
-    API (app/Api)
-        Para utilizar rotas no formato de API, basta informar "?json" como query string na url, quando iniciar a requisição.
-        
-        A única diferença aqui, é o endereço lógico das rotas.
-
-        Exemplos:
-            URL: http://localhost/items/all?json
-
-            1. No exemplo acima, estamos acessando o arquivo "app/Api/ItemsAPI.php".
+            1. No exemplo acima, estamos acessando o arquivo "app/Api/ItemAPI.php".
 
                 Para este tipo de requisição, a resposta deve ser neste formato:
 
-                    $this->response(200, array $items);
+                    $response->json(array $items);
 
                 O método acima, deve exibir um formato json.
 
-            2. Sem a query "?json", estamos acessando o arquivo "app/Controllers/ItemsController.php".
-
-                Para este tipo de requisição, a resposta deve ser neste formato:
-
-                    $this->view("items/mostrar", [
-                        "title"=>"Mostrar Itens", "favicon"=>"mostrar.ico"
-                    ]);
-
-                O método acima, deve exibir uma página html.
-
-            3. Outra forma de visualizar informações:
+            2. Outra forma de visualizar informações:
 
                 $data: 0 || "" || [] || {};
 
                     $this->console($data);
 
                 O parâmetro "data" pode ser um dado de qualquer tipo.
-                Utilize este método para testes e visualizar retornos, como numa consulta SQL, por exemplo.
+                Utilize como alternativa ao var_dump ou print_r.
+
+                Este método é apenas um "print_r", com formatação html "<pre>" para melhor visualização.

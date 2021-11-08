@@ -2,55 +2,96 @@
 
 namespace App\Core;
 
-abstract class Request {
+interface iRequest {
 
-    private $data = [
-        "GET"=> [],
-        "POST"=> [],
-        "PUT"=> [],
-        "DELETE"=> [],
-        "PATCH"=> []
-    ];
+    public function params();
+    public function body();
+    public function query();
+    public function authorization();
 
-    public function __construct()
+}
+
+class Request implements iRequest {
+
+    private $params, $body, $query;
+
+    public function __construct(array $params = [])
     {
-        require_once ROOT . "/cors.php";
-        $this->setRequestData();
-    }
+        $this->params = $params;
 
-    private function setRequestData()
-    {
-        $request_method = $_SERVER["REQUEST_METHOD"];
-        $valid_method = isset($this->data[$request_method]);
-
-        if(!$valid_method) $this->response(405);
-        
-        $this->data["GET"] = $_GET;
-        $_GET = [];
-        
-        if($request_method == "GET") return;
+        if($this->isPOST()) return;
 
         $content = file_get_contents("php://input");
-        $decoded = $this->decodeBody($content);
 
-        $this->data[$request_method] = $decoded;
-        $_POST = [];
+        if($this->isJSON($content)) return;
+
+        if($this->isFormURL($content)) return;
+
+        $this->decodeMultipartForm($content);
     }
 
-    private function decodeBody($content): array
+    public function params(): object
     {
-        if($content == "" || !empty($_POST)) return $_POST;
+        return (object) $this->params;
+    }
 
+    public function body(): object
+    {
+        return (object) $this->body;
+    }
+
+    public function query(): object
+    {
+        return (object) $this->query;
+    }
+
+    public function authorization(): string
+    {
+        $headers = apache_request_headers();
+        return $headers["Authorization"] ?? "";
+    }
+
+    private function isPOST(): bool
+    {
+        $this->query = $_GET;
+        $this->body = $_POST;
+
+        $filled = !empty($_POST);
+
+        $_GET = [];
+        $_POST = [];
+
+        return $filled;
+    }
+
+    private function isJSON($content): bool
+    {
         $first = substr($content, 0, 1);
         $last = substr($content, -1, 1);
+
+        $valid_scope = $first == "{" && $last == "}";
         
-        if($first == "{" && $last == "}") return (array) json_decode($content);
+        if(!$valid_scope) return false;
+        
+        $this->body = (array) json_decode($content);
 
-        if(stripos($content, "boundary") === false) {
-            parse_str($content, $data);
-            return $data;
-        }
+        return true;
+    }
 
+    private function isFormURL($content): bool
+    {
+        $containsBoundary = stripos($content, "boundary") !== false;
+
+        if($containsBoundary) return false;
+
+        parse_str($content, $data);
+        $this->body = $data;
+
+        return true;
+    }
+
+    private function decodeMultipartForm($content): void
+    {
         $keyword = "\r\nContent-Disposition: form-data;";
         $pieces = explode($keyword, $content);
 
@@ -65,38 +106,7 @@ abstract class Request {
 
         parse_str($content, $data);
         
-        return $data;
-    }
-
-    public function body($method)
-    {
-        $method = mb_strtoupper($method);
-        return $this->data[$method] ?? $this->response(405);
-    }
-
-    public function authorization()
-    {
-        $headers = apache_request_headers();
-        return $headers["Authorization"] ?? "";
-    }
-
-    public function json(array $data = [])
-    {
-        header("Content-Type: application/json; charset=utf-8");
-        echo json_encode($data); die;
-    }
-
-    public function response(int $code = 200, array $data = [])
-    {
-        require_once ROOT."/status.php";
-
-        $response = $status[$code] ?? $status[409];
-
-        http_response_code($response["status"]);
-
-        if(!empty($data)) $response["body"] = $data;
-
-        $this->json($response);
+        $this->body = $data;
     }
 
 }

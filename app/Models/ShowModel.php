@@ -15,7 +15,7 @@ class ShowModel extends Model {
         $results = $pdo->prepare("SHOW DATABASES");
         $results->execute();
 
-        return $results->fetchAll(\PDO::FETCH_ASSOC);
+        return $results->fetchAll();
 
     }
 

@@ -1,3 +1,7 @@
-<h1>Page Not Found :(</h1>
+<h1>
+    <?= $data["title"] ?>
+</h1>
 
-<p>This is a generic error page!</p>
+<p>
+    <?= $data["message"] ?>
+</p>

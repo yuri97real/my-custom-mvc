@@ -2,7 +2,7 @@
 
 namespace App\Core;
 
-abstract class Controller extends Request {
+abstract class Controller {
 
     public function model($model)
     {
@@ -11,11 +11,6 @@ abstract class Controller extends Request {
         require_once ROOT . "/app/Models/{$classname}.php";
 
         return new $classname;
-    }
-
-    public function view($view, $data = [])
-    {
-        require_once ROOT . "/app/Views/template.php";
     }
 
     public function redirect($route = "/home")
