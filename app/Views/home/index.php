@@ -6,7 +6,7 @@
 
 <ul>
     <li>
-        <a href="/database" target="_blank">Listar Bancos (MySQL)</a>
+        <a href="/databases" target="_blank">Listar Bancos (MySQL)</a>
     </li>
 
     <li>
