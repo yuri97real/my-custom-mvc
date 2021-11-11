@@ -14,8 +14,7 @@ Este é um microframework MVC desenvolvido em PHP.
     Em Linux, você deve habilitar o rewrite do apache, para uso do ".htaccess".
     Você pode ver um exemplo neste vídeo https://youtu.be/GsxhN4HBnC8?t=1893
 
-## Uso
-    Rotas
+## Rotas
         Você pode definir as rotas no arquivo "public/index.php".
         Lá estará o objeto $router, que contém os 4 verbos principais.
 
@@ -38,7 +37,7 @@ Este é um microframework MVC desenvolvido em PHP.
 
         Tentará acessar a classe na pasta "app/outra/pasta".
 
-    Dados
+## Dados
         Numa requisição, podemos receber 3 tipos de dados:
             
             1. Params: são dados recebidos na url e são obrigatórios.
@@ -56,26 +55,23 @@ Este é um microframework MVC desenvolvido em PHP.
                     Podemos considerar que estamos acessando a rota acima com o método POST.
                     Os dados do usuário a ser criado, estarão no corpo da requisição.
 
-        Para acessar qualquer dado acima:
+## Exemplo
+        use App\Core\iRequest;
+        use App\Core\iResponse;
 
-            Exemplo:
+        class ClasseExemplo {
 
-                use App\Core\iRequest;
-                use App\Core\iResponse;
+            public function index(iRequest $request, iResponse $response) {
 
-                class ClasseExemplo {
+                $params = $request->params();
+                $query = $request->query();
+                $body = $request->body();
 
-                    public function index(iRequest $request, iResponse $response) {
-
-                        $params = $request->params();
-                        $query = $request->query();
-                        $body = $request->body();
-
-                        echo $params->id;
-                        echo $query->pagina;
-                        echo $body->idade;
+                echo $params->id;
+                echo $query->pagina;
+                echo $body->idade;
     
-    HTML, Títulos e Favicons
+## HTML, Títulos e Favicons
         Todo controller, estende o método "view" da classe controller principal.
         Este método permite importar um arquivo da pasta "app/Views" e enviar parâmetros para esta página.
 
@@ -98,28 +94,17 @@ Este é um microframework MVC desenvolvido em PHP.
                         "title"=>"Página de Busca", "favicon"=>"buscar.ico"
                     ]);
 
-    API
-        Salve as classes no formato "{nome da classe}API" na pasta "app/Api".
+## API
+        Salve as classes na pasta "app/Api".
         Informe o diretório no $router.
 
         Exemplos:
             $router->get("/items", "ItemAPI::index")->dir("Api");
 
-            1. No exemplo acima, estamos acessando o arquivo "app/Api/ItemAPI.php".
+            No exemplo acima, estamos acessando o arquivo "app/Api/ItemAPI.php".
 
-                Para este tipo de requisição, a resposta deve ser neste formato:
+            Para este tipo de requisição, a resposta deve ser neste formato:
 
-                    $response->json(array $items);
+                $response->json(array $items);
 
-                O método acima, deve exibir um formato json.
-
-            2. Outra forma de visualizar informações:
-
-                $data: 0 || "" || [] || {};
-
-                    $this->console($data);
-
-                O parâmetro "data" pode ser um dado de qualquer tipo.
-                Utilize como alternativa ao var_dump ou print_r.
-
-                Este método é apenas um "print_r", com formatação html "<pre>" para melhor visualização.
+            O método acima, deve exibir um formato json.

@@ -4,7 +4,7 @@ namespace App\Core;
 
 use Exception;
 
-abstract class Model {
+class Model {
 
     private $pdo;
 

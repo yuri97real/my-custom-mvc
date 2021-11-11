@@ -1,11 +1,9 @@
 <?php
 
-use App\Core\Controller;
-
 use App\Core\iRequest;
 use App\Core\iResponse;
 
-class ErrorController extends Controller {
+class ErrorController {
 
     public function index(iRequest $request, iResponse $response)
     {

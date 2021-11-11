@@ -1,16 +1,20 @@
 <?php
 
-use App\Core\Controller;
-
 use App\Core\iRequest;
 use App\Core\iResponse;
 
-class DatabaseAPI extends Controller {
+use App\Core\Model;
+
+class DatabaseAPI {
 
     public function index(iRequest $request, iResponse $response)
     {
-        $model = $this->model("show");
-        $databases = $model->getDatabases();
+        $pdo = (new Model)->getPDO();
+
+        $stmt = $pdo->prepare("SHOW DATABASES");
+        $stmt->execute();
+
+        $databases = $stmt->fetchAll();
 
         $response->json($databases);
     }
