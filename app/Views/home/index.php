@@ -12,4 +12,8 @@
     <li>
         <a href="/error" target="_blank">Página de Erro</a>
     </li>
+
+    <li>
+        <a href="/about" target="_blank">Sobre</a>
+    </li>
 </ul>
