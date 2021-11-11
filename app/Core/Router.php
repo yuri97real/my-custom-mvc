@@ -88,17 +88,31 @@ class Router {
 
     private function verb(string $route, string $handler, string $verb)
     {
-        preg_match_all("/\{(.*?)\}/", $route, $variables);
-
         $this->requests[$verb][$route] = [
             "handler"=> $handler,
             "directory"=> "Controllers",
-            "variables"=> $variables[1]
+            "variables"=> $this->extractVars($route)
         ];
 
         $this->current = ["verb"=> $verb, "route"=> $route];
 
         return $this;
+    }
+
+    private function extractVars(string $route): array
+    {
+        $vars = explode("{", $route);
+
+        if(count($vars) === 1) return [];
+
+        unset($vars[0]);
+
+        $names = array_map(function($var) {
+            $index = strpos($var, "}");
+            return substr($var, 0, $index);
+        }, $vars);
+
+        return $names;
     }
 
     public function dir(string $directory)
