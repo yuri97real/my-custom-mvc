@@ -21,8 +21,9 @@ Clonar o projeto:
 
     git clone https://github.com/yuri97real/Simple-MVC-Structure.git
 
-Criar o arquivo de configurações:
+Entre na pasta e crie o arquivo de configurações:
 
+    cd Simple-MVC-Structure/
     cp config.example.php config.php
 
 Baixar as dependências com o composer:
