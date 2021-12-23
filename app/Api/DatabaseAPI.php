@@ -3,19 +3,13 @@
 use App\Core\iRequest;
 use App\Core\iResponse;
 
-use App\Core\Model;
+use App\Models\ShowModel;
 
 class DatabaseAPI {
 
     public function index(iRequest $request, iResponse $response)
     {
-        $pdo = (new Model)->getPDO();
-
-        $stmt = $pdo->prepare("SHOW DATABASES");
-        $stmt->execute();
-
-        $databases = $stmt->fetchAll();
-
+        $databases = (new ShowModel)->getDatabases();
         $response->json($databases);
     }
 

@@ -4,20 +4,24 @@ namespace App\Core;
 
 use Exception;
 
-class Model {
+abstract class Model {
 
     private $pdo;
 
     public function __construct()
     {
+        extract(DB_CONFIG);
+
+        $dbname = empty($dbname) ? "" : "dbname={$dbname};";
+        $dsn = "{$driver}:host={$host};{$dbname}charset=utf8mb4";
+        
         try {
 
             $this->pdo = new \PDO(
-                DB_CONFIG["driver"] . ":host=" .
-                DB_CONFIG["host"] . ";charset=utf8mb4",
-                DB_CONFIG["username"],
-                DB_CONFIG["password"],
-                DB_CONFIG["options"]
+                $dsn,
+                $username,
+                $password,
+                $options
             );
 
         } catch(Exception $e) {
@@ -30,6 +34,17 @@ class Model {
     public function getPDO()
     {
         return $this->pdo;
+    }
+
+    public function exec(string $query, array $values = [])
+    {
+        $result = $this->pdo->prepare($query);
+
+        empty($values) ?
+            $result->execute() :
+            $result->execute($values);
+
+        return $result;
     }
 
 }

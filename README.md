@@ -109,8 +109,6 @@ Para acessar os dados nos 3 formatos listados acima, você pode utilizar o parâ
 
 ### Exemplo
 
-    <?php
-
     use App\Core\iRequest;
     use App\Core\iResponse;
 
@@ -129,6 +127,74 @@ Para acessar os dados nos 3 formatos listados acima, você pode utilizar o parâ
         }
 
     }
+
+## Conexão Com Banco de Dados
+
+Configurações como:
+
+* driver
+* host
+* port
+* dbname
+* username
+* password
+* options
+
+Devem ser informados no arquivo "config.php" para conexão com o banco de dados.
+
+Normalmente, é necessário alterar somente <strong>usuário</strong> e <strong>senha</strong>.
+
+### Uso
+
+1. Crie suas camadas de modelos na pasta "app/Models".
+2. Estenda suas classes modelos com a principal.
+
+### Exemplo
+
+Crie um modelo de produtos.
+
+    namespace App\Models;
+    
+    use App\Core\Model;
+
+    class ProdutoModel extends Model {
+
+        public function pegarProdutos() {
+
+            $result = $this->exec("SELECT * FROM PRODUTOS");
+            return $result->fetchAll();
+
+        }
+
+    }
+
+Chame o método no controlador correspondente. ProdutoController, por exemplo.
+
+    use App\Core\iRequest;
+    use App\Core\iResponse;
+
+    use App\Models\ProdutoModel;
+
+    class ProdutoController {
+
+        public function index(iRequest $request, iResponse $response) {
+
+            $model = new ProdutoModel;
+            $produtos = $model->pegarProdutos();
+
+            $response->json($produtos);
+
+        }
+
+    }
+
+Note que os exemplos acima, utilizam a sintaxe pura do SGBD (Sistema Gerenciador de Banco de Dados) MySQL/MariaDB.
+
+Dito isso, minha recomendação é, utilize um *query builder* ou similar. Em resumo, pode ser uma biblioteca ou componente que cria as queries, utilizando a mesma sintaxe da linguagem de progração do back-end, que neste caso, é o PHP.
+
+A grande vantagem dessa abordagem, é poder alternar o driver do SGBD sem se preocupar com a sintaxe do mesmo.
+
+Recomendo ver alguns, como o <a href="https://packagist.org/packages/illuminate/database" target="_blank">Illuminate Database</a> ou o <a href="https://packagist.org/packages/coffeecode/datalayer" target="_blank">Coffeecode Datalayer</a>.
     
 ## HTML, Títulos e Favicons
 
@@ -180,7 +246,7 @@ Para este tipo de requisição, a resposta deve ser no formato JSON:
 
 O método acima, deve exibir um array no formato JSON.
 
-## Cuidados
+## Recomendações
 
 <strong>Se estiver usando Windows com *Xampp*, *Laragon* e similares, pode ignorar esta etapa.</strong>
 
@@ -195,7 +261,7 @@ Portanto, se você for um iniciante ou não tiver experiência com gerenciamento
 ### HTACCESS
 
 Você deve habilitar o rewrite do apache, para uso do ".htaccess".
-Você pode ver um exemplo neste <a href="https://youtu.be/GsxhN4HBnC8?t=1893">vídeo</a>.
+Você pode ver um exemplo neste <a href="https://youtu.be/GsxhN4HBnC8?t=1893" target="_blank">vídeo</a>.
 
 ### PACOTES
 
