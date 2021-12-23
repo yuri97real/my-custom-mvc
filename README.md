@@ -15,7 +15,7 @@ Este é um microframework MVC desenvolvido em PHP.
 * Use o comando "composer update" ou "composer install" para baixar a pasta "vendor" com o "autoload".
 * Inicie o servidor na pasta "public".
 
-## Exemplo
+### Exemplo
 
 Clonar o projeto:
 
