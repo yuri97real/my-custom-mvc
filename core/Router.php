@@ -87,7 +87,7 @@ class Router {
 
         return [
             "handler"=> "Error::index",
-            "namespace"=> "App\\Core\\",
+            "namespace"=> "Core\\",
         ];
     }
 
