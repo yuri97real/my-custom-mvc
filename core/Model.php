@@ -2,7 +2,7 @@
 
 namespace Core;
 
-use Exception;
+use PDOException;
 
 abstract class Model {
 
@@ -24,7 +24,7 @@ abstract class Model {
                 $options
             );
 
-        } catch(Exception $e) {
+        } catch(PDOException $e) {
 
             die( $e->getMessage() );
 
@@ -53,7 +53,7 @@ abstract class Model {
                 "affected"=> $result->rowCount(),
             ];
 
-        } catch(Exception $e) {
+        } catch(PDOException $e) {
 
             return [
                 "error"=> $e,
