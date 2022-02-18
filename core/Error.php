@@ -10,7 +10,7 @@ class Error {
 
         if(!file_exists($errorFile)) $this->render($errorFile);
 
-        $response->status(404)->view("error404.php");
+        $response->status(404)->view("error404");
     }
 
     private function render(string $errorFile)
