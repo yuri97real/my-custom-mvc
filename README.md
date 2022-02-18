@@ -11,7 +11,7 @@ Este é um microframework MVC desenvolvido em PHP.
 
 ## Instruções
 
-* Crie um arquivo "config.php" ou renomeie o arquivo "config.example.php" no diretório root.
+* Crie um arquivo "config.php" ou renomeie o arquivo "example.php" no diretório "config".
 * Use o comando "composer update" ou "composer install" para baixar a pasta "vendor" com o "autoload".
 * Inicie o servidor na pasta "public".
 
@@ -24,7 +24,7 @@ Clonar o projeto:
 Entre na pasta e crie o arquivo de configurações:
 
     cd Simple-MVC-Structure/
-    cp config.example.php config.php
+    cp config/example.php config/config.php
 
 Baixar as dependências com o composer:
 
@@ -34,29 +34,29 @@ Iniciar o servidor:
 
     php -S localhost:3333 -t public/
 
-## Rotas
+## Rotas e Namespaces
 
 Você pode definir as rotas no arquivo "public/routes.php".
 Lá estará o objeto $router, que contém os 4 verbos principais.
 
 ### Exemplo 1 (Rotas Simples)
 
-    $router->get("/rota/exemplo", "classe::index");
-    $router->post("/rota/exemplo", "classe::create");
-    $router->put("/rota/exemplo", "classe::update");
-    $router->delete("/rota/exemplo", "classe::destroy");
+    $router->namespace("Controllers");
+
+    $router->get("/route/example", "classe::index");
+    $router->post("/route/example", "classe::create");
 
 ### Exemplo 2 (Rotas Com Parâmetros)
 
-    $router->get("/rota/exemplo/{id}", "classe::metodo");
+    $router->get("/route/example/{id}", "classe::metodo");
 
-Nos dois exemplos acima, é esperado que os arquivos das classes informadas estejam na pasta "app/Controllers".
+### Exemplo 3 (Páginas Estáticas)
 
-Para acessar uma classe numa pasta diferente, use o método <strong>dir</strong>:
+    $router->post("/route/example/{id}", function($req, $res) {
 
-    $router->get("/rota/exemplo", "classe::metodo")->dir("outra/pasta");
+        $res->view("path/file.html");
 
-No exemplo acima, é esperado que o arquivo da classe informada esteja na pasta "app/outra/pasta".
+    });
 
 ## Dados
 
@@ -109,20 +109,20 @@ Para acessar os dados nos 3 formatos listados acima, você pode utilizar o parâ
 
 ### Exemplo
 
-    use App\Core\iRequest;
-    use App\Core\iResponse;
+    use Core\iRequest;
+    use Core\iResponse;
 
-    class ClasseExemplo {
+    class ClassExample {
 
-        public function metodo(iRequest $request, iResponse $response) {
+        public function method(iRequest $request, iResponse $response) {
 
             $params = $request->params();
             $query = $request->query();
-            $body = $request->body();
+            $body = (object) $request->body();
 
-            echo $params->id;
-            echo $query->pagina;
-            echo $body->dados;
+            echo $params["id"];
+            echo $query["page"];
+            echo $body->category;
 
         }
 
@@ -140,7 +140,7 @@ Configurações como:
 * password
 * options
 
-Devem ser informados no arquivo "config.php" para conexão com o banco de dados.
+Devem ser informados no arquivo "config/config.php" para conexão com o banco de dados.
 
 Normalmente, é necessário alterar somente <strong>usuário</strong> e <strong>senha</strong>.
 
@@ -155,34 +155,57 @@ Crie um modelo de produtos.
 
     namespace App\Models;
     
-    use App\Core\Model;
+    use Core\Model;
 
-    class ProdutoModel extends Model {
+    class ProductModel extends Model {
 
-        public function pegarProdutos() {
+        /*
+            * @param    string  $query
+            * @param    array   $values
+            * @param    bool    $list
+            *
+        */
 
-            $result = $this->exec("SELECT * FROM PRODUTOS");
-            return $result->fetchAll();
+        public function getAll() {
+
+            return $this->exec("SELECT * FROM PRODUCTS");
+
+        }
+
+        public function getByID(int $id) {
+
+            $query = "SELECT * FROM PRODUCTS WHERE id = ?";
+            $values = [1];
+            $fetch_all = false;
+
+            return $this->exec($query, $values, $fetch_all);
+
+        }
+
+        public function getByCategories(array $categories) {
+
+            $query = "SELECT * FROM PRODUCTS WHERE category IN (?, ?, ?)";
+            return $this->exec($query, $categories);
 
         }
 
     }
 
-Chame o método no controlador correspondente. ProdutoController, por exemplo.
+Chame o método no controlador correspondente:
 
-    use App\Core\iRequest;
-    use App\Core\iResponse;
+    use Core\iRequest;
+    use Core\iResponse;
 
-    use App\Models\ProdutoModel;
+    use App\Models\ProductModel;
 
-    class ProdutoController {
+    class ProductController {
 
         public function index(iRequest $request, iResponse $response) {
 
-            $model = new ProdutoModel;
-            $produtos = $model->pegarProdutos();
+            $model = new ProductModel;
+            $products = $model->getAll();
 
-            $response->json($produtos);
+            $response->json($products);
 
         }
 
@@ -208,37 +231,55 @@ Para importar o arquivo "app/Views/home/index.php", por exemplo, usamos:
 
 Como segundo parâmetro deste método, podemos enviar um array com diversos argumentos.
 
-Nesses argumentos, podemos enviar o título da página e o favicon que ela terá.
+### Exemplo 1
 
-### Exemplo
+    use Core\iRequest;
+    use Core\iResponse;
 
-    use App\Core\iRequest;
-    use App\Core\iResponse;
-
-    class Produto {
+    class Product {
 
         public function index(iRequest $request, iResponse $response) {
 
-            $response->view("listagens/produtos", [
-                "title"=>"Listagem de Produtos",
-                "favicon"=>"buscar.ico",
+            $products = ["camisa", "blusa"];
+
+            $response->view("list/products.php", [
+                "products"=> $products,
             ]);
 
         }
     }
 
-No exemplo acima, é esperado que seja renderizado o conteúdo HTML que está no arquivo "app/Views/listagens/produtos.php".
+No exemplo acima, é esperado que seja renderizado o conteúdo HTML que está no arquivo "app/Views/list/products.php".
 
-## API
+### Exemplo 2
 
-Salve as classes na pasta "app/Api".
-Informe o diretório no $router.
+No próprio arquivo de rotas "public/routes.php", é possível renderizar um conteúdo HTML.
+
+    $router = new Core\Router;
+
+    $router->namespace("Controllers");
+
+    $router->get("/produtos", function($req, $res) {
+
+        $products = ["camisa", "blusa"];
+
+        $response->view("list/products.php", [
+            "products"=> $products,
+        ]);
+
+    })
+
+## CSS e JavaScript
+
+Arquivos CSS e JavaScript devem estar no diretório "public", para acesso direto no html.
 
 ### Exemplo
 
-    $router->get("/items", "ItemAPI::index")->dir("Api");
+Se um arquivo estiver no caminho "public/css/themes.css", basta referenciá-lo no html desta forma:
 
-No exemplo acima, estamos instanciando um objeto que está no arquivo "app/Api/ItemAPI.php".
+    <link stylesheet="css" href="/css/themes.css">
+
+## API
 
 Para este tipo de requisição, a resposta deve ser no formato JSON:
 
@@ -271,7 +312,7 @@ Dependendo da sua distribuição Linux, algumas das extensões abaixo podem vir 
 
 No Fedora, troque apenas "apt" por "dnf".
 
-    sudo dnf install php-gd php-mysql php-zip php-curl php-pdo
+    sudo dnf install php-gd php-mysqlnd php-zip php-curl php-pdo
 
 É possível ativá-las manualmente também. Dessa forma, é possível ter o mesmo efeito em quase todas as distros Linux.
 

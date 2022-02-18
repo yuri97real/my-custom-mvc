@@ -1,7 +1,8 @@
 <?php
 
 #paths
-define("ROOT", __DIR__);
+define("ROOT", __DIR__."/..");
+define("BASE_URL", "http://localhost");
 #database
 define("DB_CONFIG", [
     "driver" => "mysql",
@@ -13,6 +14,6 @@ define("DB_CONFIG", [
     "options" => [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
-        PDO::ATTR_CASE => PDO::CASE_NATURAL
-    ]
+        PDO::ATTR_CASE => PDO::CASE_NATURAL,
+    ],
 ]);
