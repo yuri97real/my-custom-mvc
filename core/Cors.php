@@ -4,15 +4,15 @@ namespace Core;
 
 class Cors {
 
-    private $allowed_methods = ["GET", "POST"], $allowed_domains = [];
+    private $allowed_domains = [];
+    private $allowed_methods = ["GET", "POST"];
 
-    public function use()
+    public function use(string $http_origin)
     {
         $methods = implode(", ", $this->allowed_methods);
 
         header("Access-Control-Allow-Methods: {$methods}");
         
-        $http_origin = $_SERVER['HTTP_ORIGIN'] ?? "";
         $allowed = in_array($http_origin, $this->allowed_domains);
 
         if(!$allowed) return;
@@ -22,7 +22,6 @@ class Cors {
 
     public function setMethods(array $allowed_methods)
     {
-        if(empty($allowed_methods)) return;
         $this->allowed_methods = $allowed_methods;
     }
 

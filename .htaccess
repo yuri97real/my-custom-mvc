@@ -1,7 +1,35 @@
 RewriteEngine On
 RewriteBase /
 
-RewriteCond %{THE_REQUEST} /public/([^\s?]*) [NC]
-RewriteRule ^ %1 [L,NE,R=302]
+Options All -Indexes
 
+## FORCE AUTHORIZATION
+
+RewriteCond %{HTTP:Authorization} ^(.*)
+RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
+
+## FORCE WWW REDIRECT
+
+# RewriteCond %{HTTP_HOST} !^www\. [NC]
+# RewriteRule ^(.*)$ https://www.%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+## FORCE HTTPS REDIRECT
+
+# RewriteCond %{HTTP:X-Forwarded-Proto} !https
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+## REDIRECT TO PUBLIC FOLDER
+
+RewriteCond %{THE_REQUEST} /public/([^\s?]*) [NC]
+
+RewriteRule ^ %1 [L,NE,R=302]
 RewriteRule ^((?!public/).*)$ public/$1 [L,NC]
+
+## URL REWRITE (FILE NOT EXISTS)
+
+RewriteCond %{REQUEST_FILENAME} !-f
+
+## REDIRECT REQUESTS TO INDEX FILE
+
+RewriteRule ^(.*)$ index.php

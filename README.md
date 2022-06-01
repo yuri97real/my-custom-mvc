@@ -223,9 +223,9 @@ Recomendo ver alguns, como o <a href="https://packagist.org/packages/illuminate/
 
 O parâmetro <strong>response</strong> possui métodos de resposta, inclusive páginas HTML.
 
-O método "view" do <strong>response</strong>, permite importar um arquivo da pasta "app/Views" e enviar parâmetros para ele.
+O método "view" do <strong>response</strong>, permite importar um arquivo da pasta "public/screens" e enviar parâmetros para ele.
 
-Para importar o arquivo "app/Views/home/index.php", por exemplo, usamos:
+Para importar o arquivo "public/screens/home/index.php", por exemplo, usamos:
 
     $response->view("home/index");
 
@@ -249,7 +249,7 @@ Como segundo parâmetro deste método, podemos enviar um array com diversos argu
         }
     }
 
-No exemplo acima, é esperado que seja renderizado o conteúdo HTML que está no arquivo "app/Views/list/products.php".
+No exemplo acima, é esperado que seja renderizado o conteúdo HTML que está no arquivo "public/screens/list/products.php".
 
 ### Exemplo 2
 

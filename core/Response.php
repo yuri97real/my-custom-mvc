@@ -19,7 +19,7 @@ class Response implements iResponse {
     public function view(string $view, array $data = []): void
     {
         http_response_code($this->response["code"]);
-        require_once ROOT."/app/Views/{$view}.php"; die;
+        require_once ROOT."/public/screens/{$view}.php"; die;
     }
 
     public function json(array $body = []): void

@@ -6,7 +6,7 @@ class Error {
 
     public function index($request, $response)
     {
-        $errorFile = ROOT."/app/Views/error404.php";
+        $errorFile = ROOT."/public/screens/error404.php";
 
         if(!file_exists($errorFile)) $this->render($errorFile);
 

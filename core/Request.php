@@ -47,8 +47,8 @@ class Request implements iRequest {
 
     public function authorization(): string
     {
-        $headers = apache_request_headers();
-        return $headers["Authorization"] ?? "";
+        $headers = getallheaders();
+        return $headers["Authorization"] ?? ($headers["authorization"] ?? "");
     }
 
     private function isPOST(): bool
