@@ -26,10 +26,21 @@ class Router {
     private function parseURL()
     {
         $query = $_SERVER["QUERY_STRING"] ?? "";
+        $request_uri = $this->parseURI();
 
-        $url = str_replace("?{$query}", "", $_SERVER["REQUEST_URI"]);
+        $url = str_replace("?{$query}", "", $request_uri);
 
         return strlen($url) < 2 ? "/" : rtrim($url, "/");
+    }
+
+    private function parseURI()
+    {
+        $port = $_SERVER["SERVER_PORT"] == 80 ? "" : ":".$_SERVER["SERVER_PORT"];
+        
+        $base_url = str_replace(["http://", "https://"], "", BASE_URL);
+        $full_url = $_SERVER["SERVER_NAME"].$port.$_SERVER["REQUEST_URI"];
+
+        return str_replace($base_url, "", $full_url);
     }
 
     public function dispatch()
