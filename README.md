@@ -58,6 +58,38 @@ Lá estará o objeto $router, que contém os 4 verbos principais.
 
     });
 
+## Limitador de Requisições
+
+Use o componente 'Limiter' nas suas rotas para limitar a quantidade de acessos por determinado período de tempo.
+
+ATENÇÃO: Método não efetivo contra DDos.
+
+### Exemplo
+
+    use Core\Limiter;
+
+    ...
+
+    public function hello(iRequest $request, iResponse $response) {
+
+        $limiter = new Limiter("hello");
+
+        $limiter->limitRequests(2, 5, function($time_left) use ($response) {
+
+            $response->json([
+                "message"=> "Access limit exceeded. Wait {$time_left} seconds.",
+            ]);
+
+        });
+
+        $response->json([
+            "message"=> "Hello World!",
+        ]);
+
+    }
+
+No exemplo acima, o usuário só poderá realizar 2 requisições num período de 5 segundos.
+
 ## Dados
 
 Numa requisição, há 3 formas principais de se receber dados e parâmetros:

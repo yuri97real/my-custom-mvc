@@ -14,5 +14,6 @@ $router->get("/contatos", function($req, $res) {
 $router->namespace("API");
 
 $router->get("/databases", "JSON::index");
+$router->get("/limiter-example", "JSON::limiter");
 
 $router->dispatch();
