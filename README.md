@@ -2,7 +2,8 @@
 
 ## Descrição
 
-Este é um microframework MVC desenvolvido em PHP.
+<p>Este é um microframework de roteamento desenvolvido em PHP.</p>
+<p>OBS:. Só funciona com apache, pois todo roteamento está fortemente ligado ao htaccess.</p>
 
 ## Requisitos
 
@@ -11,50 +12,40 @@ Este é um microframework MVC desenvolvido em PHP.
 
 ## Instruções
 
-* Crie um arquivo "config.php" ou renomeie o arquivo "example.php" no diretório "config".
-* Use o comando "composer update" ou "composer install" para baixar a pasta "vendor" com o "autoload".
-* Inicie o servidor na pasta "public".
-
-### Exemplo
-
-Clonar o projeto:
+### 1. Clone o projeto:
 
     git clone https://github.com/yuri97real/Simple-MVC-Structure.git
 
-Entre na pasta e crie o arquivo de configurações:
+### 2. Entre na pasta:
 
     cd Simple-MVC-Structure/
-    cp config/example.php config/config.php
 
-Baixar as dependências com o composer:
+### 3. Crie uma cópia do arquivo "example.php" e renomeie para "config.php":
+
+    cp example.php config.php
+
+### 4. Baixe o autoload do composer:
 
     composer update
 
-Iniciar o servidor:
-
-    php -S localhost:3333 -t public/
-
 ## Rotas e Namespaces
 
-Você pode definir as rotas no arquivo "public/routes.php".
-Lá estará o objeto $router, que contém os 4 verbos principais.
+É possível utilizar os 4 verbos HTTP (GET, POST PUT e DELETE) com esta ferramenta.
 
 ### Exemplo 1 (Rotas Simples)
 
-    $router->namespace("Controllers");
-
-    $router->get("/route/example", "classe::index");
-    $router->post("/route/example", "classe::create");
+    $router->get("/route/example", "UserController::index");
+    $router->post("/route/example", "PostController::create");
 
 ### Exemplo 2 (Rotas Com Parâmetros)
 
-    $router->get("/route/example/{id}", "classe::metodo");
+    $router->get("/route/example/{id}", "MailController::send");
 
-### Exemplo 3 (Páginas Estáticas)
+### Exemplo 3 (Páginas HTML)
 
     $router->post("/route/example/{id}", function($req, $res) {
 
-        $res->view("path/file.html");
+        $res->view("filepath"); //diretório: "app/Views/pages"
 
     });
 
@@ -94,7 +85,7 @@ No exemplo acima, o usuário só poderá realizar 2 requisições num período d
 
 Numa requisição, há 3 formas principais de se receber dados e parâmetros:
     
-### Params
+### 1. Params
 
 São dados recebidos na url e são obrigatórios.
 
@@ -105,7 +96,7 @@ Exemplo:
 
 No exemplo acima, o "id" é obrigatório para buscar os dados do produto 25.
 
-### Query
+### 2. Query
 
 São dados recebidos na url e são opcionais.
 
@@ -117,7 +108,7 @@ Exemplo:
 Podemos considerar que o exemplo acima é uma listagem de produtos.
 A listagem é independente da paginação ou do filtro.
 
-### Body
+### 3. Body
 
 São dados recebidos no corpo da requisição, geralmente por formulários ou no formato JSON.
 
@@ -148,13 +139,13 @@ Para acessar os dados nos 3 formatos listados acima, você pode utilizar o parâ
 
         public function method(iRequest $request, iResponse $response) {
 
-            $params = $request->params();
-            $query = $request->query();
-            $body = (object) $request->body();
+            $query = $request->query;
+            $body = $request->body;
+            $params = $request->params;
 
-            echo $params["id"];
             echo $query["page"];
-            echo $body->category;
+            echo $body["category"];
+            echo $params["id"];
 
         }
 
@@ -172,20 +163,18 @@ Configurações como:
 * password
 * options
 
-Devem ser informados no arquivo "config/config.php" para conexão com o banco de dados.
-
-Normalmente, é necessário alterar somente <strong>usuário</strong> e <strong>senha</strong>.
+Devem ser informados no arquivo "config.php" para conexão com o banco de dados.
 
 ### Uso
 
-1. Crie suas camadas de modelos na pasta "app/Models".
+1. Crie suas camadas de modelos na pasta "database/Models".
 2. Estenda suas classes modelos com a principal.
 
 ### Exemplo
 
 Crie um modelo de produtos.
 
-    namespace App\Models;
+    namespace Database\Models;
     
     use Core\Model;
 
@@ -200,7 +189,7 @@ Crie um modelo de produtos.
 
         public function getAll() {
 
-            return $this->exec("SELECT * FROM PRODUCTS");
+            return $this->execute("SELECT * FROM PRODUCTS");
 
         }
 
@@ -210,14 +199,14 @@ Crie um modelo de produtos.
             $values = [1];
             $fetch_all = false;
 
-            return $this->exec($query, $values, $fetch_all);
+            return $this->execute($query, $values, $fetch_all);
 
         }
 
         public function getByCategories(array $categories) {
 
             $query = "SELECT * FROM PRODUCTS WHERE category IN (?, ?, ?)";
-            return $this->exec($query, $categories);
+            return $this->execute($query, $categories);
 
         }
 
@@ -235,9 +224,9 @@ Chame o método no controlador correspondente:
         public function index(iRequest $request, iResponse $response) {
 
             $model = new ProductModel;
-            $products = $model->getAll();
+            $products = $model->getAll(); // retorna 'data', 'error' e 'affected'
 
-            $response->json($products);
+            $response->json($products->data);
 
         }
 
@@ -257,7 +246,7 @@ O parâmetro <strong>response</strong> possui métodos de resposta, inclusive p�
 
 O método "view" do <strong>response</strong>, permite importar um arquivo da pasta "public/screens" e enviar parâmetros para ele.
 
-Para importar o arquivo "public/screens/home/index.php", por exemplo, usamos:
+Para importar o arquivo "app/Views/pages/home/index.php", por exemplo, usamos:
 
     $response->view("home/index");
 
@@ -281,15 +270,13 @@ Como segundo parâmetro deste método, podemos enviar um array com diversos argu
         }
     }
 
-No exemplo acima, é esperado que seja renderizado o conteúdo HTML que está no arquivo "public/screens/list/products.php".
+No exemplo acima, é esperado que seja renderizado o conteúdo HTML que está no arquivo "app/Views/pages/list/products.php".
 
 ### Exemplo 2
 
-No próprio arquivo de rotas "public/routes.php", é possível renderizar um conteúdo HTML.
+No próprio arquivo de rotas, é possível renderizar um conteúdo HTML.
 
-    $router = new Core\Router;
-
-    $router->namespace("Controllers");
+    $router = new Core\Router("App", APP_URL);
 
     $router->get("/produtos", function($req, $res) {
 
@@ -303,13 +290,20 @@ No próprio arquivo de rotas "public/routes.php", é possível renderizar um con
 
 ## CSS e JavaScript
 
-Arquivos CSS e JavaScript devem estar no diretório "public", para acesso direto no html.
+Arquivos CSS e JavaScript devem estar no diretório "assets", para acesso direto no html através do método $assets(nome_do_asset).
+Também é possível acessar assets locais com o método $local(nome_do_asset).
 
-### Exemplo
+### Exemplo 1
 
-Se um arquivo estiver no caminho "public/css/themes.css", basta referenciá-lo no html desta forma:
+Se um arquivo estiver no caminho "app/Views/assets/global/style.css", basta referenciá-lo no html desta forma:
 
-    <link stylesheet="css" href="/css/themes.css">
+    <link stylesheet="css" href="<?= $assets("global/style.css") ?>">
+
+### Exemplo 2
+
+Se um arquivo estiver no caminho "app/Views/pages/home/style.css", basta referenciá-lo no html desta forma:
+
+    <link stylesheet="css" href="<?= $local("home/style.css") ?>">
 
 ## API
 

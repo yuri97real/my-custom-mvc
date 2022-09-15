@@ -1,6 +1,4 @@
 RewriteEngine On
-RewriteBase /
-
 Options All -Indexes
 
 ## FORCE AUTHORIZATION
@@ -19,17 +17,12 @@ RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
 # RewriteCond %{HTTPS} off
 # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
-## REDIRECT TO PUBLIC FOLDER
+## HTTP ROUTE FILES
 
-RewriteCond %{THE_REQUEST} /public/([^\s?]*) [NC]
+RewriteRule ^uploads/(.*)$ server/Storage/uploads/$1 [L,QSA]
+RewriteRule ^server/(.*)$ server/index.php [L,QSA]
 
-RewriteRule ^ %1 [L,NE,R=302]
-RewriteRule ^((?!public/).*)$ public/$1 [L,NC]
+RewriteRule ^local/(.*)$ app/Views/pages/$1 [L,QSA]
+RewriteRule ^assets/(.*)$ app/Views/assets/$1 [L,QSA]
 
-## URL REWRITE (FILE NOT EXISTS)
-
-RewriteCond %{REQUEST_FILENAME} !-f
-
-## REDIRECT REQUESTS TO INDEX FILE
-
-RewriteRule ^(.*)$ index.php
+RewriteRule ^(.*)$ app/index.php [L,QSA]

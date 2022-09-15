@@ -3,46 +3,21 @@
 namespace Core;
 
 interface iRequest {
-
-    public function params();
-    public function body();
-    public function query();
     public function authorization();
-
 }
 
 class Request implements iRequest {
 
-    private $params, $body, $query;
+    public $body, $query, $params;
 
-    public function __construct(array $params = [])
+    public function __construct(array $params)
     {
+        $this->query = $_GET;
         $this->params = $params;
 
-        if($this->isPOST()) return;
+        if( empty($_POST) ) return $this->setBody();
 
-        $content = file_get_contents("php://input");
-
-        if($this->isJSON($content)) return;
-
-        if($this->isFormURL($content)) return;
-
-        $this->decodeMultipartForm($content);
-    }
-
-    public function params(): array
-    {
-        return $this->params;
-    }
-
-    public function body(): array
-    {
-        return $this->body;
-    }
-
-    public function query(): array
-    {
-        return $this->query;
+        $this->body = $_POST;
     }
 
     public function authorization(): string
@@ -51,62 +26,19 @@ class Request implements iRequest {
         return $headers["Authorization"] ?? ($headers["authorization"] ?? "");
     }
 
-    private function isPOST(): bool
+    private function setBody()
     {
-        $this->query = $_GET;
-        $this->body = $_POST;
+        $content = file_get_contents("php://input");
 
-        $filled = !empty($_POST);
-
-        $_GET = [];
-        $_POST = [];
-
-        return $filled;
+        if( ($_SERVER["CONTENT_TYPE"] ?? "") !== "application/json" ) return $this->parseString($content);
+        
+        $this->body = json_decode($content, true);
     }
 
-    private function isJSON($content): bool
+    private function parseString(string $content)
     {
-        $first = substr($content, 0, 1);
-        $last = substr($content, -1, 1);
-
-        $valid_scope = $first == "{" && $last == "}";
-        
-        if(!$valid_scope) return false;
-        
-        $this->body = (array) json_decode($content);
-
-        return true;
-    }
-
-    private function isFormURL($content): bool
-    {
-        $containsBoundary = stripos($content, "boundary") !== false;
-
-        if($containsBoundary) return false;
-
-        parse_str($content, $data);
-        $this->body = $data;
-
-        return true;
-    }
-
-    private function decodeMultipartForm($content): void
-    {
-        $keyword = "\r\nContent-Disposition: form-data;";
-        $pieces = explode($keyword, $content);
-
-        $boundary = $pieces[0];
-
-        $pieces = str_replace([
-            $boundary, "\n", "\r", "--", 'name="'
-        ], "", $pieces);
-
-        $pieces = str_replace('"', "=", $pieces);
-        $content = implode("&", $pieces);
-
-        parse_str($content, $data);
-        
-        $this->body = $data;
+        parse_str($content, $body);
+        $this->body = $body;
     }
 
 }

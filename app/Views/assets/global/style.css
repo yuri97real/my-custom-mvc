@@ -1,0 +1,33 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    color: #f2f2f2;
+    font-family: sans-serif;
+    background-color: #191919;
+}
+
+h1 {
+    color: crimson;
+}
+
+.container {
+    width: 70%;
+    max-width: 1280px;
+    margin: 0 auto;
+}
+
+.flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.flex-center.column {
+    flex-direction: column;
+}
+.flex-center.wrapper {
+    min-height: 100vh;
+}

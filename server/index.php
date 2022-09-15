@@ -1,9 +1,7 @@
 <?php
 
-session_start();
-
-require_once "../vendor/autoload.php";
-require_once "../config/config.php";
+require_once __DIR__."/../config.php";
+require_once __DIR__."/../vendor/autoload.php";
 
 $http_origin = $_SERVER['HTTP_ORIGIN'] ?? "";
 $relative_origin = str_replace("www.", "", $http_origin);
@@ -20,4 +18,4 @@ $cors->setDomains([
 
 $cors->use($http_origin);
 
-require_once "./routes.php";
+require_once __DIR__."/routes.php";

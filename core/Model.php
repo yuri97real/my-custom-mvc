@@ -36,27 +36,25 @@ abstract class Model {
         return $this->pdo;
     }
 
-    public function exec(string $query, array $values = [], $list = true)
+    public function execute(string $query, array $values = [], $list = true)
     {
         try {
 
             $result = $this->pdo->prepare($query);
 
-            empty($values) ?
-                $result->execute() :
-                $result->execute($values);
+            empty($values) ? $result->execute() : $result->execute($values);
 
-            return [
-                "data"=> !$list ?
-                    $result->fetch() :
-                    $result->fetchAll(),
+            return (object) [
+                "data"=> !$list ? $result->fetch() : $result->fetchAll(),
+                "error"=> null,
                 "affected"=> $result->rowCount(),
             ];
 
         } catch(PDOException $e) {
 
-            return [
-                "error"=> $e,
+            return (object) [
+                "data"=> null,
+                "error"=> $e->getMessage(),
                 "affected"=> 0,
             ];
 

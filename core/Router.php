@@ -4,149 +4,166 @@ namespace Core;
 
 class Router {
 
-    private $url, $namespace;
-    
-    private $route_list = [
-        "GET"=> [],
-        "POST"=> [],
-        "PUT"=> [],
-        "DELETE"=> []
-    ];
+    private $namespace;
 
-    public function __construct(bool $logs = false)
+    private $baseURL, $parsedURI;
+    private $currentMethod, $currentRoute;
+
+    private $routeList = [], $routeNames = [];
+
+    public function __construct(string $namespace, string $baseURL)
     {
-        $this->url = $this->parseURL();
+        $this->namespace = $namespace;
+        $this->baseURL = $baseURL;
+        $this->parsedURI = $this->parseURI();
 
-        if($logs) {
+        if( !IN_PRODUCTION ) {
             error_reporting(E_ALL);
             ini_set('display_errors', 1);
         }
     }
 
-    private function parseURL()
+    public function get(string $route, $handler)
     {
-        $query = $_SERVER["QUERY_STRING"] ?? "";
-        $request_uri = $this->parseURI();
+        return $this->pushRoute("GET", $route, $handler);
+    }
 
-        $url = str_replace("?{$query}", "", $request_uri);
+    public function post(string $route, $handler)
+    {
+        return $this->pushRoute("POST", $route, $handler);
+    }
 
-        return strlen($url) < 2 ? "/" : rtrim($url, "/");
+    public function put(string $route, $handler)
+    {
+        return $this->pushRoute("PUT", $route, $handler);
+    }
+
+    public function delete(string $route, $handler)
+    {
+        return $this->pushRoute("DELETE", $route, $handler);
+    }
+
+    public function name(string $index)
+    {
+        $this->routeNames[$index] = $this->currentRoute;
+        return $this;
+    }
+
+    public function middlewares(array $classes)
+    {
+        $route = $this->currentRoute;
+        $method = $this->currentMethod;
+
+        $this->routeList[$method][$route]["middlewares"] = $classes;
+        
+        return $this;
+    }
+
+    public function dispatch($defaultHandler)
+    {
+        if( !IN_PRODUCTION ) {
+
+            $routes = $this->routeNames;
+            $routes["baseURL"] = $this->baseURL;
+
+            $json = json_encode($routes);
+
+            file_put_contents(ROOT."/routes/{$this->namespace}.json", $json);
+
+        }
+
+        print_r( $this->finish($defaultHandler) );
     }
 
     private function parseURI()
     {
-        $port = $_SERVER["SERVER_PORT"] == 80 ? "" : ":".$_SERVER["SERVER_PORT"];
-        
-        $base_url = str_replace(["http://", "https://"], "", BASE_URL);
-        $full_url = $_SERVER["SERVER_NAME"].$port.$_SERVER["REQUEST_URI"];
+        $requestURIWithoutQueryString = isset($_SERVER["QUERY_STRING"]) ? str_replace(
+            "?".$_SERVER["QUERY_STRING"], "", $_SERVER["REQUEST_URI"]
+        ) : $_SERVER["REQUEST_URI"];
 
-        return str_replace($base_url, "", $full_url);
+        $arrayBaseURL = explode("/", $this->baseURL);
+        $arrayBaseURLWithoutOrigin = array_slice($arrayBaseURL, 3);
+
+        $restOfTheRoute = str_replace($arrayBaseURLWithoutOrigin, "", $requestURIWithoutQueryString);
+        $restOfTheRoute = trim($restOfTheRoute, "/");
+
+        return strlen($restOfTheRoute) < 2 ? "/" : "/{$restOfTheRoute}";
     }
 
-    public function dispatch()
+    private function pushRoute(string $method, string $route, $handler)
     {
-        $request_method = $_SERVER["REQUEST_METHOD"];
-        $routes = $this->route_list[$request_method] ?? [];
+        $this->currentRoute = $route;
+        $this->currentMethod = $method;
 
-        if(empty($routes)) return;
+        $this->routeList[$method][$route]["handler"] = $handler;
 
-        extract( $this->getRouteData($routes) );
+        return $this;
+    }
+
+    private function getRouteData(array $routeList, $defaultHandler)
+    {
+        if( isset($routeList[$this->parsedURI]) ) return $routeList[$this->parsedURI];
+
+        $parsedRoutePieces = explode("/", $this->parsedURI);
+        $parsedRouteLength = count($parsedRoutePieces);
+
+        foreach($routeList as $currentURI => $currentData) :
+
+            $currentRoutePieces = explode("/", $currentURI);
+            if( $parsedRouteLength != count($currentRoutePieces) ) continue;
+
+            $paramKeys = $this->extractParamKeys($currentURI);
+            if( empty($paramKeys) ) continue;
+
+            $paramValues = array_diff_assoc($parsedRoutePieces, $currentRoutePieces);
+            if( count($paramKeys) != count($paramValues) ) continue;
+
+            $currentData["params"] = array_combine($paramKeys, $paramValues);
+
+            return $currentData;
+
+        endforeach;
+
+        return [ "handler"=> $defaultHandler ];
+    }
+
+    private function extractParamKeys(string $route): array
+    {
+        $params = explode("{", $route);
+
+        if(count($params) === 1) return [];
+
+        unset($params[0]);
+
+        return array_map(function($param) {
+            $index = strpos($param, "}");
+            return substr($param, 0, $index);
+        }, $params);
+    }
+
+    private function finish($defaultHandler)
+    {
+        define("BASE_URL", $this->baseURL);
+        define("ROUTE_NAMES", $this->routeNames);
+
+        $method = $_POST["__method__"] ?? $_SERVER["REQUEST_METHOD"];
+
+        unset($_POST["__method__"]);
+
+        $routeList = $this->routeList[$method] ?? [];
+        $routeData = $this->getRouteData($routeList, $defaultHandler);
+
+        extract($routeData);
 
         $request = new Request($params ?? []);
         $response = new Response;
 
-        if( is_callable($handler) ) {
-            $handler($request, $response); die;
-        }
+        if( isset($middlewares) )
+            foreach($middlewares as $middleware) { call_user_func("Middlewares\\{$middleware}", $request, $response); }
 
-        $schema = explode("::", $handler);
-
-        $controller = $namespace.$schema[0];
-        $method = $schema[1];
-
-        call_user_func([new $controller, $method], $request, $response);
-    }
-
-    private function getRouteData(array $routes)
-    {
-        if( isset($routes[$this->url]) ) {
-            return $routes[$this->url];
-        }
-
-        $piecesURL = explode("/", $this->url);
-        $lengthURL = count($piecesURL);
-
-        foreach($routes as $route => $data) {
-
-            $piecesRoute = explode("/", $route);
-            if($lengthURL != count($piecesRoute)) continue;
-
-            $vars = $this->extractVars($route);
-            if(empty($vars)) continue;
-
-            $diff = array_diff_assoc($piecesURL, $piecesRoute);
-
-            if(count($diff) != count($vars)) continue;
-
-            return [
-                "handler"=> $data["handler"],
-                "namespace"=> $data["namespace"],
-                "params"=> array_fill_keys($vars, current($diff)),
-            ];
-
-        }
-
-        return [
-            "handler"=> "Error::index",
-            "namespace"=> "Core\\",
-        ];
-    }
-
-    private function extractVars(string $route): array
-    {
-        $vars = explode("{", $route);
-
-        if(count($vars) === 1) return [];
-
-        unset($vars[0]);
-
-        return array_map(function($var) {
-            $index = strpos($var, "}");
-            return substr($var, 0, $index);
-        }, $vars);
-    }
-
-    private function verb(string $route, mixed $handler, string $verb)
-    {
-        $this->route_list[$verb][$route] = [
-            "handler"=> $handler,
-            "namespace"=> $this->namespace,
-        ];
-    }
-
-    public function get(string $route, mixed $handler)
-    {
-        $this->verb($route, $handler, "GET");
-    }
-
-    public function post(string $route, mixed $handler)
-    {
-        $this->verb($route, $handler, "POST");
-    }
-
-    public function put(string $route, mixed $handler)
-    {
-        $this->verb($route, $handler, "PUT");
-    }
-
-    public function delete(string $route, mixed $handler)
-    {
-        $this->verb($route, $handler, "DELETE");
-    }
-
-    public function namespace(string $namespace)
-    {
-        $this->namespace = "App\\{$namespace}\\";
+        return is_callable($handler) ?
+            $handler($request, $response) :
+            call_user_func("{$this->namespace}\\Controllers\\{$handler}", $request, $response);
     }
 
 }
