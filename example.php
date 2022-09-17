@@ -5,7 +5,7 @@ session_start();
 define("ROOT", __DIR__);
 define("IN_PRODUCTION", false);
 
-define("APP_URL", "http://localhost/Simple-MVC-Structure/");
+define("APP_URL", "http://localhost/Simple-MVC-Structure");
 define("SERVER_URL", "http://localhost/Simple-MVC-Structure/server");
 
 define("DB_CONFIG", [

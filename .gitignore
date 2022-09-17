@@ -1,3 +1,4 @@
-vendor
+routes
 server/Storage/uploads
+vendor
 config.php

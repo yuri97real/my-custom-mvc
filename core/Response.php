@@ -26,20 +26,27 @@ class Response implements iResponse {
 
         $version = IN_PRODUCTION ? "" : "?v=".rand();
 
-        $route = function (string $name) { return APP_URL.(ROUTE_NAMES[$name] ?? "/undefined"); };
         $local = function (string $file) use ($version) { return APP_URL."/local/{$file}".$version; };
         $assets = function (string $file) use ($version) { return APP_URL."/assets/{$file}".$version; };
         $uploads = function (string $file) { return SERVER_URL."/uploads/{$file}"; };
-
+        
         $constants = function () {
-
             $dir = ROOT."/routes";
 
             $app = file_exists("{$dir}/App.json") ? file_get_contents("{$dir}/App.json") : "{}";
             $server = file_exists("{$dir}/Server.json") ? file_get_contents("{$dir}/Server.json") : "{}";
 
             return "<script>\nconst routes = { app: $app, server: $server };\nconst parsedURI = location.href.replace(routes.app.baseURL, '')\n</script>\n";
+        };
 
+        $route = function (string $name, array $params = []) {
+            $uri = (ROUTE_NAMES[$name] ?? "/undefined");
+
+            foreach($params as $key => $value) :
+                $uri = str_replace("{".$key."}", $value, $uri);
+            endforeach;
+
+            return APP_URL.$uri;
         };
         
         $component = function (string $name, array $data = []) use ($route, $local, $assets, $uploads) {
