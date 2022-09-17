@@ -28,6 +28,10 @@
 
     composer update
 
+### 5. Crie a pasta de rotas:
+
+    mkdir routes/
+
 ## Rotas e Namespaces
 
 É possível utilizar os 4 verbos HTTP (GET, POST PUT e DELETE) com esta ferramenta.
@@ -290,20 +294,22 @@ No próprio arquivo de rotas, é possível renderizar um conteúdo HTML.
 
 ## CSS e JavaScript
 
-Arquivos CSS e JavaScript devem estar no diretório "assets", para acesso direto no html através do método $assets(nome_do_asset).
-Também é possível acessar assets locais com o método $local(nome_do_asset).
+No arquivo de rotas, é possível informar a rota de arquivos estáticos:
+
+    $router->static("/local", "app/Views/pages", ["js", "css"]);
+    $router->static("/assets", "app/Views/assets", ["js", "css"]);
 
 ### Exemplo 1
 
 Se um arquivo estiver no caminho "app/Views/assets/global/style.css", basta referenciá-lo no html desta forma:
 
-    <link stylesheet="css" href="<?= $assets("global/style.css") ?>">
+    <link stylesheet="css" href="<?= $static("assets/global/style.css") ?>">
 
 ### Exemplo 2
 
 Se um arquivo estiver no caminho "app/Views/pages/home/style.css", basta referenciá-lo no html desta forma:
 
-    <link stylesheet="css" href="<?= $local("home/style.css") ?>">
+    <link stylesheet="css" href="<?= $static("pages/home/style.css") ?>">
 
 ## API
 

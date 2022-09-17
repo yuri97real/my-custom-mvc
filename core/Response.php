@@ -27,9 +27,8 @@ class Response implements iResponse {
 
         $version = IN_PRODUCTION ? "" : "?v=".rand();
 
-        $local = function (string $file) use ($version) { return APP_URL."/local/{$file}".$version; };
-        $assets = function (string $file) use ($version) { return APP_URL."/assets/{$file}".$version; };
-        $uploads = function (string $file) { return SERVER_URL."/uploads/{$file}"; };
+        $static = function (string $filename) use ($version) { return APP_URL."/{$filename}{$version}"; };
+        $storage = function (string $filename) use ($version) { return SERVER_URL."/{$filename}{$version}"; };
         
         $constants = function () {
             $dir = ROOT."/routes";
@@ -50,7 +49,7 @@ class Response implements iResponse {
             return APP_URL.$uri;
         };
         
-        $component = function (string $name, array $data = []) use ($route, $local, $assets, $uploads) {
+        $component = function (string $name, array $data = []) use ($route, $static, $storage) {
             extract($data);
             require(ROOT."/app/Views/components/{$name}.php");
         };

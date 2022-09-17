@@ -11,7 +11,7 @@ class FileController {
     {
         extract($request->params);
 
-        $filename = "{$dirname}/{$folder}/{$basename}";
+        $filename = str_replace("@", ".", "{$dirname}/{$folder}/{$basename}");
         $pathinfo = pathinfo($filename);
 
         $extension = $pathinfo["extension"];
