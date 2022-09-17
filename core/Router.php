@@ -43,6 +43,13 @@ class Router {
         return $this->pushRoute("DELETE", $route, $handler);
     }
 
+    public function static(string $route, string $dirname, array $allowed = [])
+    {
+        $dirname = ROOT."/{$dirname}";
+        $this->routeList["GET"]["{$route}/{folder}/{basename}"]["handler"] = "FileController::show";
+        $this->routeList["GET"]["{$route}/{folder}/{basename}"]["params"] = compact("dirname", "allowed");
+    }
+
     public function name(string $index)
     {
         $this->routeNames[$index] = $this->currentRoute;
@@ -118,7 +125,8 @@ class Router {
             $paramValues = array_diff_assoc($parsedRoutePieces, $currentRoutePieces);
             if( count($paramKeys) != count($paramValues) ) continue;
 
-            $currentData["params"] = array_combine($paramKeys, $paramValues);
+            $filledParams = array_combine($paramKeys, $paramValues);
+            $currentData["params"] = array_merge($filledParams, $currentData["params"] ?? []);
 
             return $currentData;
 

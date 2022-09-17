@@ -7,7 +7,8 @@ interface iResponse {
     public function status(int $code);
     public function view(string $view, array $data = []);
     public function json(array $body);
-    public function file(string $saveAs, string $filepath, string $contentType = "application/octet-stream");
+    public function file(string $filename);
+    public function download(string $saveAs, string $filename);
     public function redirect(string $route);
 
 }
@@ -65,16 +66,28 @@ class Response implements iResponse {
         return json_encode($data);
     }
 
-    public function file(string $saveAs, string $filepath, string $contentType = "application/octet-stream")
+    public function file(string $filename)
     {
+        $mime = mime_content_type($filename);
+        $mime = $mime == "text/plain" ? "" : $mime;
+
+        header("Content-Type: {$mime}");
+        readfile($filename);
+    }
+
+    public function download(string $saveAs, string $filename)
+    {
+        $mime = mime_content_type($filename);
+        $mime = $mime == "text/plain" ? "" : $mime;
+
         header("Content-Description: File Transfer");
-        header("Content-Type: {$contentType}");
+        header("Content-Type: {$mime}");
         header("Content-Disposition: attachment;filename={$saveAs}");
         header("Cache-Control: max-age=0");
 
-        header("Content-Length: " . filesize($filepath));
+        header("Content-Length: " . filesize($filename));
 
-        ob_clean(); flush(); readfile($filepath);
+        ob_clean(); flush(); readfile($filename);
     }
 
     public function redirect(string $index)

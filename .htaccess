@@ -19,10 +19,5 @@ RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
 
 ## HTTP ROUTE FILES
 
-RewriteRule ^server/uploads/(.*)$ server/Storage/uploads/$1 [L,QSA]
 RewriteRule ^server/(.*)$ server/index.php [L,QSA]
-
-RewriteRule ^local/(.*)$ app/Views/pages/$1 [L,QSA]
-RewriteRule ^assets/(.*)$ app/Views/assets/$1 [L,QSA]
-
 RewriteRule ^(.*)$ app/index.php [L,QSA]
