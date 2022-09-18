@@ -7,7 +7,7 @@ use Core\iResponse;
 
 class FileController {
 
-    private function forceCache()
+    private static function forceCache()
     {
         session_cache_limiter('public');
         session_start();
