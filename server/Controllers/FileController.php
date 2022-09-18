@@ -7,8 +7,15 @@ use Core\iResponse;
 
 class FileController {
 
+    private function forceCache()
+    {
+        session_cache_limiter('public');
+        session_start();
+    }
+
     public static function show(iRequest $request, iResponse $response)
     {
+        self::forceCache();
         extract($request->params);
 
         $filename = str_replace("@", ".", "{$dirname}/{$folder}/{$basename}");
