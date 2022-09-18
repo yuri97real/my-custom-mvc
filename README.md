@@ -32,6 +32,10 @@
 
     mkdir routes/
 
+### 6. Crie a pasta de uploads:
+
+    mkdir server/Storage/uploads
+
 ## Rotas e Namespaces
 
 É possível utilizar os 4 verbos HTTP (GET, POST PUT e DELETE) com esta ferramenta.

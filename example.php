@@ -1,5 +1,6 @@
 <?php
 
+session_cache_limiter('public');
 session_start();
 
 define("ROOT", __DIR__);
