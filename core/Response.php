@@ -5,11 +5,11 @@ namespace Core;
 interface iResponse {
 
     public function status(int $code);
-    public function view(string $view, array $data = []);
-    public function json(array $body);
+    public function view(string $file, array $data = [], string $template = "");
+    public function json(array $data);
     public function file(string $filename);
     public function download(string $saveAs, string $filename);
-    public function redirect(string $route);
+    public function redirect(string $index, array $queryParams = []);
 
 }
 
@@ -89,9 +89,11 @@ class Response implements iResponse {
         ob_clean(); flush(); readfile($filename);
     }
 
-    public function redirect(string $index)
+    public function redirect(string $index, array $queryParams = [])
     {
-        header("Location: " . BASE_URL.( ROUTE_NAMES[$index] ?? "error") ); die;
+        $queryString = empty($queryParams) ? "" : "?".http_build_query($queryParams);
+        header("Location: " . BASE_URL.( ROUTE_NAMES[$index] ?? "/error").$queryString);
+        die;
     }
 
 }
