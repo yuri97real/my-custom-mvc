@@ -57,6 +57,27 @@
 
     });
 
+### Exemplo 4 (Grupo de Rotas)
+
+    $router->get("/", "PageController::home")->name("home");
+
+    $router->prefix("admin")->group([
+
+        $router->get("/", "AdminController::dashboard")->name(".dashboard")->current(),
+        $router->get("/users", "AdminController::users")->name(".users")->middlewares([])->current(),
+        $router->get("/products", "AdminController::products")->name(".products")->current(),
+
+    ], []);
+
+    $router->get("/products", "PageController::products")->name("products");
+
+No exemplo acima, todas as rotas terão prefixo 'admin'.
+
+    Exemplo para /users:
+
+        Rota: /admin/users
+        Nome: admin.users
+
 ## Limitador de Requisições
 
 Use o componente 'Limiter' nas suas rotas para limitar a quantidade de acessos por determinado período de tempo.

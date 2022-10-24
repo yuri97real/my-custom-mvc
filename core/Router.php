@@ -4,10 +4,10 @@ namespace Core;
 
 class Router {
 
-    private $namespace;
+    private $namespace, $prefix = "";
 
     private $baseURL, $parsedURI;
-    private $currentMethod, $currentRoute;
+    private $currentMethod, $currentRoute, $currentName;
 
     private $routeList = [], $routeNames = [];
 
@@ -52,7 +52,11 @@ class Router {
 
     public function name(string $index)
     {
+        $index = $this->prefix.$index;
+
+        $this->currentName = $index;
         $this->routeNames[$index] = $this->currentRoute;
+
         return $this;
     }
 
@@ -64,6 +68,40 @@ class Router {
         $this->routeList[$method][$route]["middlewares"] = $classes;
         
         return $this;
+    }
+
+    public function current()
+    {
+        return [
+            "method"=> $this->currentMethod,
+            "route"=> $this->currentRoute,
+            "name"=> $this->currentName,
+        ];
+    }
+
+    public function prefix(string $prefix)
+    {
+        $this->prefix = $prefix;
+        return $this;
+    }
+
+    public function group(array $routes, array $mainMiddlewares = [])
+    {
+        foreach($routes as $currentData) :
+
+            $method = $currentData["method"];
+            $route = $currentData["route"];
+
+            $oldMiddlewares = $this->routeList[$method][$route]["middlewares"] ?? [];
+
+            $this->routeList[$method][$route]["middlewares"] = [
+                ...$mainMiddlewares,
+                ...$oldMiddlewares,
+            ];
+
+        endforeach;
+
+        $this->prefix = "";
     }
 
     public function dispatch($defaultHandler)
@@ -99,6 +137,8 @@ class Router {
 
     private function pushRoute(string $method, string $route, $handler)
     {
+        $route = $this->prefix == "" ? $route : rtrim("/{$this->prefix}$route", "/");
+
         $this->currentRoute = $route;
         $this->currentMethod = $method;
 
