@@ -3,9 +3,6 @@
 require_once __DIR__."/../config.php";
 require_once __DIR__."/../vendor/autoload.php";
 
-$http_origin = $_SERVER['HTTP_ORIGIN'] ?? "";
-$relative_origin = str_replace("www.", "", $http_origin);
-
 $cors = new Core\Cors();
 
 $cors->setMethods([
@@ -13,9 +10,9 @@ $cors->setMethods([
 ]);
 
 $cors->setDomains([
-    $relative_origin,
+    //your domains allowed here!
 ]);
 
-$cors->use($http_origin);
+$cors->use();
 
 require_once __DIR__."/routes.php";
